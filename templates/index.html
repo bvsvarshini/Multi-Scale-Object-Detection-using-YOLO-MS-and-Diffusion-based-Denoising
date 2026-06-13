@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Object Detection</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+.scan-line{
+    position:absolute;
+    left:0;
+    width:100%;
+    height:3px;
+    background:linear-gradient(90deg,transparent,#7C5CFF,white,#7C5CFF,transparent);
+    box-shadow:0 0 20px #7C5CFF;
+    animation:scanMove 2.2s ease-in-out infinite;
+}body { font-family: 'Inter', sans-serif; }
+
+@keyframes scanMove{
+    0%{ top:0 }
+    50%{ top:calc(100% - 3px) }
+    100%{ top:0 }
+}
+
+/* FADE */
+.fade{
+    opacity:0;
+    transform:translateY(40px);
+    transition:0.7s;
+}
+.fade.show{
+    opacity:1;
+    transform:translateY(0);
+}
+/* DETECTION BOX */
+.box{
+    position:absolute;
+    border:2px solid #22c55e;
+    border-radius:6px;
+    opacity:0;
+    transform:scale(0.9);
+    animation:boxAppear 0.5s ease forwards;
+}
+/* LABEL */
+.label{
+    position:absolute;
+    background:#22c55e;
+    color:black;
+    font-size:12px;
+    padding:2px 6px;
+    border-radius:4px;
+    opacity:0;
+    transform:translateY(-5px);
+    animation:labelAppear 0.5s ease forwards;
+}
+
+/* ANIMATIONS */
+@keyframes boxAppear{
+    to{
+        opacity:1;
+        transform:scale(1);
+    }
+}
+
+@keyframes labelAppear{
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+/* SCAN LINE (SYNCHRONIZED) */
+.scan-line{
+    position:absolute;
+    left:0;
+    width:100%;
+    height:3px;
+    background:linear-gradient(90deg,transparent,#7C5CFF,white,#7C5CFF,transparent);
+    box-shadow:0 0 20px #7C5CFF;
+}
+
+/* animations will be triggered via JS */
+.animate-scan{
+    animation:scanMove 2s ease-in-out forwards;
+}
+
+@keyframes scanMove{
+    0%{ top:0 }
+    50%{ top:calc(100% - 3px) }
+    100%{ top:0 }
+}
+/* BOX DRAW ANIMATION */
+.box{
+    position:absolute;
+    border:2px solid #22c55e;
+    border-radius:6px;
+    opacity:0;
+}
+
+/* DRAW EFFECT */
+.draw{
+    animation:drawBox 0.6s ease forwards;
+}
+
+@keyframes drawBox{
+    0%{
+        opacity:1;
+        transform:scale(0.8);
+        border-color:transparent;
+    }
+    50%{
+        border-color:#22c55e;
+    }
+    100%{
+        opacity:1;
+        transform:scale(1);
+        box-shadow:0 0 10px #22c55e;
+    }
+}
+
+/* LABEL */
+.label{
+    position:absolute;
+    background:#22c55e;
+    color:black;
+    font-size:12px;
+    padding:2px 6px;
+    border-radius:4px;
+    opacity:0;
+}
+
+/* LABEL FADE */
+.fadein{
+    animation:fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn{
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+.draw{
+    animation:drawBox 0.6s ease forwards;
+}
+
+.fadein{
+    animation:fadeIn 0.5s ease forwards;
+}
+box-shadow: 0 0 12px #22c55e;
+.scan-line{
+    position:absolute;
+    left:0;
+    width:100%;
+    height:2px;
+    background:linear-gradient(90deg,transparent,#7C5CFF,transparent);
+    opacity:0.7;
+    animation:scanMove 2.5s linear infinite;
+}
+
+@keyframes scanMove{
+    from{ top:0 }
+    to{ top:100% }
+}
+/* SECTION FADE-IN */
+.fade {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s ease;
+}
+.fade.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* IMAGE HOVER EFFECT */
+#how img {
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+#how img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 40px rgba(124,92,255,0.25);
+}
+
+/* CARD DEPTH (WITHOUT CHANGING HTML) */
+#how .grid > div {
+    padding: 10px;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+}
+#how .grid > div:hover {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(8px);
+}
+
+/* DETECTION BOX STYLE */
+.box {
+    position: absolute;
+    border: 2px solid #22c55e;
+    border-radius: 6px;
+    box-shadow: 0 0 12px rgba(34,197,94,0.6);
+    animation: boxAppear 1s ease forwards;
+}
+
+/* LABEL STYLE */
+.label {
+    position: absolute;
+    background: #22c55e;
+    color: black;
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+    animation: fadeIn 1s ease forwards;
+}
+
+/* BOX ANIMATION */
+@keyframes boxAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* LABEL FADE */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* MAKE BOXES REPLAY ON SCROLL */
+.animate-box .box,
+.animate-box .label {
+    animation: none;
+}
+.animate-box.active .box {
+    animation: boxAppear 0.8s ease forwards;
+}
+.animate-box.active .label {
+    animation: fadeIn 0.8s ease forwards;
+}
+</style>
+</head>
+
+<body class="bg-[#0B0F1A] text-white">
+
+<!-- NAV -->
+<nav class="flex justify-between px-8 py-4 backdrop-blur-md sticky top-0 z-50 bg-[#0B0F1A]/80">
+    <h1 class="font-semibold">AI Detector</h1>
+    <div class="space-x-6 text-gray-400">
+        <a href="#detect">Detect</a>
+        <a href="#features">Features</a>
+        <a href="#how">How</a>
+        <a href="#about">About</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="relative py-24 px-6 text-center max-w-6xl mx-auto overflow-hidden">
+
+    <!-- SOFT BACKGROUND GLOW -->
+    <div class="absolute inset-0 flex justify-center pointer-events-none">
+        <div class="w-[500px] h-[500px] bg-[#7C5CFF]/20 blur-[120px] rounded-full"></div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="relative z-10">
+
+        <!-- HEADING -->
+        <h1 class="text-4xl md:text-5xl font-semibold leading-tight tracking-tight">
+            AI-Powered Object Detection <br class="hidden md:block">
+            <span class="bg-gradient-to-r from-[#7C5CFF] to-[#4F8CFF] bg-clip-text text-transparent">
+                in Real Time
+            </span>
+        </h1>
+
+        <!-- SUBTEXT -->
+        <p class="mt-5 text-gray-400 max-w-2xl mx-auto text-base leading-relaxed">
+            Analyze images instantly using trained deep learning models. Detect multiple objects 
+            with high accuracy and clear visual outputs.
+        </p>
+
+        <!-- CTA -->
+        <button onclick="scrollToDetect()" 
+            class="mt-8 px-7 py-3 rounded-lg bg-[#7C5CFF] hover:bg-[#6a4fff] 
+            transition duration-200 text-white font-medium shadow-sm">
+            Start Detection
+        </button>
+
+        <!-- HERO IMAGE -->
+        <div class="relative mt-14 mx-auto w-full max-w-2xl group overflow-hidden rounded-2xl">
+
+            <!-- IMAGE -->
+            <img src="https://images.pexels.com/photos/466685/pexels-photo-466685.jpeg?auto=compress&cs=tinysrgb&w=1200"
+     class="relative rounded-2xl shadow-xl w-full object-cover 
+     brightness-110 contrast-110 saturate-110 border border-white/10">
+
+            <!-- SUBTLE OVERLAY -->
+            <div class="absolute inset-0 bg-black/10"></div>
+
+            <!-- SCAN LINE -->
+            <div class="scan-line"></div>
+
+        </div>
+
+    </div>
+
+</section>
+<section id="detect" class="py-20 text-center fade"> <h2 class="text-3xl md:text-4xl font-semibold tracking-tight">
+    Analyze <span class="bg-gradient-to-r from-[#7C5CFF] to-[#4F8CFF] bg-clip-text text-transparent">Image</span>
+</h2>
+
+<p class="mt-3 text-gray-400 max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+    Upload an image and instantly identify multiple objects with clear labels and confidence values.
+</p> <div id="dropZone"
+class="mt-8 mx-auto w-[300px] md:w-[400px] h-[180px]
+border border-dashed border-white/10 rounded-xl flex items-center justify-center cursor-pointer 
+bg-white/5 backdrop-blur-xl
+hover:border-[#7C5CFF]/60 hover:shadow-[0_0_30px_rgba(124,92,255,0.25)] 
+hover:-translate-y-1 transition duration-300 relative overflow-hidden"> <div class="absolute inset-0 bg-gradient-to-r from-[#7C5CFF]/10 to-[#4F8CFF]/10 opacity-0 hover:opacity-100 transition"></div> <p class="text-gray-400 group-hover:text-white transition">
+    Drop image here or click to upload
+</p> </div> <form method="POST" enctype="multipart/form-data" id="form" action="/#detect"> <input type="file" name="image" id="fileInput" class="hidden" required> </form> <div id="preview" class="mt-6"></div> <div id="loading" class="hidden mt-6 text-center"> <p class="text-[#7C5CFF] text-lg font-medium animate-pulse"> Detecting objects... please wait </p> </div> {% if output %} <div class="mt-14 text-center"> <!-- BIG DETECTED IMAGE --> <img src="{{ url_for('static', filename='output.jpg') }}" class="mx-auto rounded-2xl shadow-2xl w-[95%] md:w-[85%] lg:w-[75%] max-w-[1100px] hover:scale-[1.01] transition duration-500"> <!-- PREMIUM BUTTON --> <button onclick="resetDetection()" class="mt-8 px-8 py-3 rounded-xl bg-gradient-to-r from-[#7C5CFF] to-[#4F8CFF] hover:scale-105 hover:shadow-[0_0_20px_#7C5CFF] transition duration-300 text-white font-medium tracking-wide"> Analyze Another Image </button> </div> {% endif %} </section>
+<!-- FEATURES -->
+<section id="features" class="py-28 px-6 relative">
+
+    <!-- BACKGROUND GLOW -->
+    <div class="absolute inset-0 flex justify-center pointer-events-none">
+        <div class="w-[600px] h-[600px] bg-blue-500/10 blur-[140px] rounded-full"></div>
+    </div>
+
+    <h2 class="text-4xl text-center font-semibold mb-16 relative">
+        Features
+    </h2>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto relative">
+
+        <!-- CARD -->
+        <div class="group p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl 
+                    hover:-translate-y-2 hover:border-[#7C5CFF]/50 
+                    hover:shadow-[0_0_40px_rgba(124,92,255,0.25)]
+                    transition duration-500">
+
+            <div class="w-12 h-12 flex items-center justify-center rounded-xl 
+                        bg-gradient-to-br from-[#7C5CFF] to-[#4F8CFF] mb-4">
+                🧠
+            </div>
+
+            <h3 class="font-semibold text-lg mb-2">Multi-Object Detection</h3>
+
+            <p class="text-gray-400 text-sm leading-relaxed">
+                Detects multiple objects within complex scenes, even when elements overlap or appear cluttered.
+            </p>
+
+        </div>
+
+        <!-- CARD -->
+        <div class="group p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl 
+                    hover:-translate-y-2 hover:border-[#7C5CFF]/50 
+                    hover:shadow-[0_0_40px_rgba(124,92,255,0.25)]
+                    transition duration-500">
+
+            <div class="w-12 h-12 flex items-center justify-center rounded-xl 
+                        bg-gradient-to-br from-[#7C5CFF] to-[#4F8CFF] mb-4">
+                🔍
+            </div>
+
+            <h3 class="font-semibold text-lg mb-2">Multi-Scale Recognition</h3>
+
+            <p class="text-gray-400 text-sm leading-relaxed">
+                Accurately identifies objects of different sizes, from small distant items to large foreground elements.
+            </p>
+
+        </div>
+
+        <!-- CARD -->
+        <div class="group p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl 
+                    hover:-translate-y-2 hover:border-[#7C5CFF]/50 
+                    hover:shadow-[0_0_40px_rgba(124,92,255,0.25)]
+                    transition duration-500">
+
+            <div class="w-12 h-12 flex items-center justify-center rounded-xl 
+                        bg-gradient-to-br from-[#7C5CFF] to-[#4F8CFF] mb-4">
+                ⚡
+            </div>
+
+            <h3 class="font-semibold text-lg mb-2">Real-Time Processing</h3>
+
+            <p class="text-gray-400 text-sm leading-relaxed">
+                Optimized deep learning models ensure fast and efficient detection with minimal delay.
+            </p>
+
+        </div>
+
+        <!-- CARD -->
+        <div class="group p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl 
+                    hover:-translate-y-2 hover:border-[#7C5CFF]/50 
+                    hover:shadow-[0_0_40px_rgba(124,92,255,0.25)]
+                    transition duration-500">
+
+            <div class="w-12 h-12 flex items-center justify-center rounded-xl 
+                        bg-gradient-to-br from-[#7C5CFF] to-[#4F8CFF] mb-4">
+                📊
+            </div>
+
+            <h3 class="font-semibold text-lg mb-2">Visual Output Clarity</h3>
+
+            <p class="text-gray-400 text-sm leading-relaxed">
+                Displays detected objects with bounding boxes and confidence scores, helping users understand both results and reliability.
+            </p>
+
+        </div>
+
+    </div>
+
+</section><!-- HOW -->
+<section id="how" class="py-24 text-center fade">
+
+    <h2 class="text-3xl">How It Works</h2>
+
+    <div class="grid md:grid-cols-3 gap-8 mt-12 max-w-6xl mx-auto">
+
+        <!-- Upload -->
+        <div>
+            <img src="https://images.pexels.com/photos/13499748/pexels-photo-13499748.jpeg?auto=compress&cs=tinysrgb&w=800" class="rounded-xl">
+            <p class="mt-4 text-gray-400">Upload image</p>
+        </div>
+
+        <!-- Processing (CLEAN VISUAL NOT RANDOM AI ART) -->
+        <div>
+            <img src="https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg?auto=compress&cs=tinysrgb&w=800" class="rounded-xl">
+            <p class="mt-4 text-gray-400">Model extracts features</p>
+        </div>
+
+        <!-- Detection (WITH BOUNDING BOXES) -->
+        <div id="detectionSection" class="relative inline-block overflow-hidden">
+    <!-- IMAGE -->
+    <img src="https://ultralytics.com/images/zidane.jpg"
+         class="rounded-xl block">
+
+       <!-- OVERLAY -->
+    <div class="absolute inset-0">
+
+        <!-- BOX 1 -->
+        <div class="box" style="top:15%; left:25%; width:28%; height:60%;"></div>
+<div class="label" style="top:10%; left:25%;">
+    Person 96%
+</div>
+
+<div class="box" style="top:8%; left:60%; width:30%; height:55%;"></div>
+<div class="label" style="top:3%; left:60%;">
+    Person 92%
+</div>
+
+    </div>
+
+    <p class="mt-8 text-gray-400 text-center">
+        Objects detected with bounding boxes
+    </p>
+</div>
+
+    </div>
+
+    <p class="mt-8 text-gray-400 max-w-xl mx-auto">
+        The system uses trained deep learning models to process images and detect objects with high accuracy.
+    </p>
+
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="py-28 px-6 relative">
+
+    <!-- BACKGROUND GLOW -->
+    <div class="absolute inset-0 flex justify-center items-center pointer-events-none">
+        <div class="w-[500px] h-[500px] bg-purple-500/20 blur-[120px] rounded-full"></div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="relative max-w-4xl mx-auto">
+
+        <h2 class="text-4xl text-center font-semibold mb-12">
+            Why Object Detection Matters
+        </h2>
+
+        <!-- GLASS CARD -->
+        <div class="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-10 
+                    shadow-[0_0_40px_rgba(124,92,255,0.2)]
+                    hover:shadow-[0_0_60px_rgba(124,92,255,0.4)]
+                    transition duration-500">
+
+            <p class="text-gray-300 leading-relaxed text-lg text-center">
+
+                Object detection is widely used in 
+                <span class="text-white font-medium">autonomous vehicles</span>, 
+                <span class="text-white font-medium">surveillance systems</span>, 
+                <span class="text-white font-medium">retail analytics</span>, 
+                and <span class="text-white font-medium">smart city solutions</span>.
+
+                <br><br>
+
+                It enables machines to understand visual data, identify objects of different sizes, 
+                and make <span class="text-[#7C5CFF] font-semibold">intelligent decisions</span> 
+                with high accuracy and efficiency.
+
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+<!-- FOOTER -->
+<footer class="text-center py-10 text-gray-500">
+    © 2026 AI Detection System
+</footer>
+
+<script>
+const dropZone=document.getElementById("dropZone");
+const fileInput=document.getElementById("fileInput");
+const preview=document.getElementById("preview");
+const loading=document.getElementById("loading");
+const form=document.getElementById("form");
+
+dropZone.onclick=()=>fileInput.click();
+
+fileInput.onchange=e=>{
+    const file=e.target.files[0];
+
+    const img=document.createElement("img");
+    img.src=URL.createObjectURL(file);
+    img.className="mx-auto rounded-xl mt-6 w-[300px]";
+
+    preview.innerHTML="";
+    preview.appendChild(img);
+
+    loading.classList.remove("hidden");
+
+    form.submit();
+};
+
+function scrollToDetect(){
+    document.getElementById("detect").scrollIntoView({behavior:"smooth"});
+}
+
+/* fade animation */
+const fades=document.querySelectorAll(".fade");
+window.addEventListener("scroll",()=>{
+    fades.forEach(el=>{
+        if(el.getBoundingClientRect().top < window.innerHeight - 100){
+            el.classList.add("show");
+        }
+    });
+});
+const section = document.getElementById("detectionSection");
+
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+
+            // RESET
+            const scan = section.querySelector(".scan-line");
+            const boxes = section.querySelectorAll(".box");
+            const labels = section.querySelectorAll(".label");
+
+            scan.classList.remove("animate-scan");
+            boxes.forEach(b => b.classList.remove("draw"));
+            labels.forEach(l => l.classList.remove("fadein"));
+
+            // FORCE RESTART
+            void scan.offsetWidth;
+
+            // RE-ADD
+            scan.classList.add("animate-scan");
+
+            boxes.forEach((b, i) => {
+                setTimeout(() => b.classList.add("draw"), 800 + i * 500);
+            });
+
+            labels.forEach((l, i) => {
+                setTimeout(() => l.classList.add("fadein"), 1400 + i * 500);
+            });
+
+        }
+    });
+}, { threshold: 0.6 });
+
+observer.observe(section);
+function resetDetection(){
+
+    // clear preview
+    document.getElementById("preview").innerHTML = "";
+
+    // hide loading
+    document.getElementById("loading").classList.add("hidden");
+
+    // clear file input
+    document.getElementById("fileInput").value = "";
+
+    // reload page WITHOUT result
+    window.location.href = "/";
+}
+
+</script>
+
+</body>
+</html>
